@@ -59,8 +59,8 @@ def runRagChat(vectorstore):
     The context is your ONE AND ONLY source of truth. If the information is not explicitly mentioned
     in the context, state "I do not know based on the provided text."
 
-    Pay meticulous attention to names of people, objects like weapons, titles, and relationships
-    between multiple characters.
+    Pay meticulous attention to names of people, aliases, objects like weapons, relationships and
+    conversations between multiple characters, and actions of the characters.
 
     ### CONTEXT ###
     Context:
@@ -73,11 +73,11 @@ def runRagChat(vectorstore):
     Answer:"""
     prompt = ChatPromptTemplate.from_template(template)
 
-    def format_docs(docs):
+    def formatDocs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
     chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        {"context": retriever | formatDocs, "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
@@ -90,8 +90,11 @@ def runRagChat(vectorstore):
             break
 
         # We use similarity_search_with_score to see the 'how'
-        docs_with_scores = vectorstore.similarity_search_with_score(query, k=2)
-        print(f"\n[DEBUG] Top Source: Page {docs_with_scores[0][0].metadata.get('page')} (Score: {docs_with_scores[0][1]:.4f})")
+        docsWithScores = vectorstore.similarity_search_with_score(query, k=2)
+        print(
+            f"\n[DEBUG] Top Source: Page {docsWithScores[0][0].metadata.get('page')} "
+            f"(Score: {docsWithScores[0][1]:.4f})"
+        )
 
         response = chain.invoke(query)
         print(f"\nAI: {response}")
@@ -99,13 +102,25 @@ def runRagChat(vectorstore):
 
 if __name__ == "__main__":
     while True:
-        available_files = [f for f in os.listdir(DATA_DIR) if f.endswith(".pdf")]
-        print(f"\nAvailable PDFs: {available_files}")        
-        file_choice = input("Enter PDF filename (or 'exit'): ").strip()
+        availableFiles = [f for f in os.listdir(DATA_DIR) if f.endswith(".pdf")]
+        print()
+        for index, file in enumerate(availableFiles):
+            print(f"{index} :  {file}")
+        print()
 
-        if file_choice.lower() == "exit":
+        fileChoice = input(
+            "Enter PDF filename or select the number (or 'exit'): "
+            ).strip()
+
+        if fileChoice.lower() == "exit":
             break
 
-        vstore = getVectorstore(file_choice)
+        try:
+            # document index has been selected
+            documentNumber = int(fileChoice)
+            vstore = getVectorstore(availableFiles[documentNumber])
+        except ValueError:
+            vstore = getVectorstore(fileChoice)
+
         if vstore:
             runRagChat(vstore)
