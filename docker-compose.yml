@@ -1,0 +1,25 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_storage:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  rag-app:
+    build: .
+    container_name: rag-app
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - ./data:/app/data
+      - ./faiss_index:/app/faiss_index
+    # These two lines are CRITICAL for the input() loop to work
+    stdin_open: true 
+    tty: true        
+
+volumes:
+  ollama_storage:

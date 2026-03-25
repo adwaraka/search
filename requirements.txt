@@ -1,0 +1,7 @@
+langchain-core
+langchain-community
+langchain-ollama
+langchain-text-splitters
+pypdf
+faiss-cpu
+tiktoken
