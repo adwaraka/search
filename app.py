@@ -60,21 +60,24 @@ def runRagChat(vectorstore):
     # Stricter prompt for better accuracy
     template = """
     ### SYSTEM INSTRUCTIONS ###
-    You are a factual research assistant. Answer the question using ONLY the provided context below.
-    The context is your ONE AND ONLY source of truth. If the information is not explicitly mentioned
-    in the context, state "I do not know based on the provided text."
+    You are a factual research assistant and logical analyst.
+    Answer the question using ONLY the provided context below.
 
-    Pay meticulous attention to names of people, aliases, objects like weapons, relationships and
-    conversations between multiple characters, and actions of the characters.
+    ### LOGICAL PROTOCOL ###
+    Before providing the final answer, perform these internal steps:
+    1. IDENTIFY: List specific facts from the context related to the question.
+    2. CONNECT: If facts are in different sources, explain how they relate (e.g., Character A's weapon vs. Character B's armor).
+    3. CONCLUDE: Provide the answer based strictly on those identified links.
+
+    If the context does not contain the answer or the links needed to deduce it, state "I do not know based on the provided text."
 
     ### CONTEXT ###
-    Context:
     {context}
 
-    ## QUESTION ###
+    ### QUESTION ###
     Question: {question}
 
-    ### FINAL ANSWER ###
+    ### STEP-BY-STEP ANALYSIS & FINAL ANSWER ###
     Answer:"""
     prompt = ChatPromptTemplate.from_template(template)
 
