@@ -1,7 +1,9 @@
+langchain-classic
 langchain-core
 langchain-community
 langchain-ollama
 langchain-text-splitters
+flashrank
 pypdf
 faiss-cpu
 tiktoken

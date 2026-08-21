@@ -1,14 +1,19 @@
 import os
 import sys
 
-# Modern Imports
-from langchain_ollama import OllamaEmbeddings, ChatOllama
+from langchain_ollama import (
+    OllamaEmbeddings,
+    ChatOllama,
+)
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+
+from langchain_classic.retrievers import ContextualCompressionRetriever
+from langchain_community.document_compressors import FlashrankRerank
 
 # Config
 DATA_DIR = "./data"
@@ -50,34 +55,64 @@ def getVectorstore(pdf_filename):
 
 
 def runRagChat(vectorstore):
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
     # Stricter prompt for better accuracy
     template = """
     ### SYSTEM INSTRUCTIONS ###
-    You are a factual research assistant. Answer the question using ONLY the provided context below.
-    The context is your ONE AND ONLY source of truth. If the information is not explicitly mentioned
-    in the context, state "I do not know based on the provided text."
+    You are a factual research assistant and logical analyst.
+    Answer the question using ONLY the provided context below.
 
-    Pay meticulous attention to names of people, aliases, objects like weapons, relationships and
-    conversations between multiple characters, and actions of the characters.
+    ### LOGICAL PROTOCOL ###
+    Before providing the final answer, perform these internal steps:
+    1. IDENTIFY: List specific facts from the context related to the question.
+    2. CONNECT: If facts are in different sources, explain how they relate (e.g., Character A's weapon vs. Character B's armor).
+    3. CONCLUDE: Provide the answer based strictly on those identified links.
+
+    If the context does not contain the answer or the links needed to deduce it, state "I do not know based on the provided text."
 
     ### CONTEXT ###
-    Context:
     {context}
 
-    ## QUESTION ###
+    ### QUESTION ###
     Question: {question}
 
-    ### FINAL ANSWER ###
+    ### STEP-BY-STEP ANALYSIS & FINAL ANSWER ###
     Answer:"""
     prompt = ChatPromptTemplate.from_template(template)
 
     def formatDocs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
+
+    def debugDocuments(docs):
+        # CRITICAL CHECK: If it's a string, we've already formatted it. 
+        # We can't debug metadata of a string.
+        if isinstance(docs, str):
+            return docs 
+
+        print(f"\n[DEBUG] Re-ranker selected {len(docs)} documents:")
+        for i, doc in enumerate(docs):
+            # Flashrank sometimes flattens metadata; we use .get() to be safe
+            page = doc.metadata.get('page', 'N/A')
+            score = doc.metadata.get('relevance_score', 'N/A')
+            snippet = doc.page_content[:60].replace('\n', ' ')
+            print(f"  {i+1}. Page {page} | Rel-Score: {score} | Snippet: {snippet}...")
+        
+        return docs
+
+
+    # By pulling 10 results from FAISS but using a Re-ranker to pick the best 5
+    compressor = FlashrankRerank()
+    compressionRetriever = ContextualCompressionRetriever(
+        base_compressor=compressor,
+        base_retriever=retriever
+    )
     chain = (
-        {"context": retriever | formatDocs, "question": RunnablePassthrough()}
+        {
+            "context": compressionRetriever | debugDocuments | formatDocs,
+            "question": RunnablePassthrough()
+         }
         | prompt
         | llm
         | StrOutputParser()
@@ -88,13 +123,6 @@ def runRagChat(vectorstore):
         query = input("\nYou: ")
         if query.lower() in ["exit", "quit"]:
             break
-
-        # We use similarity_search_with_score to see the 'how'
-        docsWithScores = vectorstore.similarity_search_with_score(query, k=2)
-        print(
-            f"\n[DEBUG] Top Source: Page {docsWithScores[0][0].metadata.get('page')} "
-            f"(Score: {docsWithScores[0][1]:.4f})"
-        )
 
         response = chain.invoke(query)
         print(f"\nAI: {response}")
