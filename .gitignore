@@ -1,2 +1,6 @@
 faiss_index/
 data/
+__pycache__/
+*.pyc
+flashrank_cache/
+error.log
