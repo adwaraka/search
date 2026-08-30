@@ -142,6 +142,26 @@ You: exit
 
 ---
 
+## Benchmarking Alternative LLMs
+
+You can benchmark multiple Ollama models on extraction accuracy, negation handling, boundary enforcement, and query latency using [benchmark.py](file:///Users/adwaraka/Desktop/search/benchmark.py) and [eval_dataset.json](file:///Users/adwaraka/Desktop/search/eval_dataset.json).
+
+### 1. Pull candidate models in Ollama (Host macOS)
+```bash
+ollama pull gemma2:9b
+ollama pull qwen2.5:7b
+ollama pull llama3.1:8b
+```
+
+### 2. Run the benchmark suite via Docker
+```bash
+docker compose run --rm rag-app python benchmark.py --models gemma2:9b qwen2.5:7b llama3.1:8b
+```
+
+Results and latency metrics will be printed as a summary table and exported to `benchmark_results.json`.
+
+---
+
 ## Disclaimer
 
 This tool is designed for document search, data extraction, and research assistance. It is **not** a diagnostic medical device and should not replace professional medical judgment or direct clinical review.

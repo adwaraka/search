@@ -1,0 +1,106 @@
+[
+  {
+    "id": "med_dosage_extraction",
+    "pdf": "cardiology_report.pdf",
+    "category": "Dosage & Medication Extraction",
+    "question": "What medications and exact dosages are documented for the patient?",
+    "expected_keywords": [
+      "Lisinopril",
+      "10 mg",
+      "Atorvastatin",
+      "20 mg",
+      "Aspirin",
+      "81 mg"
+    ],
+    "must_not_contain": [
+      "40 mg",
+      "Metformin"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "vitals_and_labs_extraction",
+    "pdf": "cardiology_report.pdf",
+    "category": "Lab & Vitals Extraction",
+    "question": "What were the patient's blood pressure, heart rate, LDL cholesterol, and hs-Troponin level?",
+    "expected_keywords": [
+      "138/86",
+      "76 bpm",
+      "118 mg/dL",
+      "<0.01 ng/mL"
+    ],
+    "must_not_contain": [],
+    "is_boundary_test": false
+  },
+  {
+    "id": "negation_prior_mi",
+    "pdf": "cardiology_report.pdf",
+    "category": "Negation Awareness",
+    "question": "Does the patient have a personal history of myocardial infarction or prior cardiac procedures?",
+    "expected_keywords": [
+      "no"
+    ],
+    "must_not_contain": [
+      "patient had a myocardial infarction",
+      "history of cardiac procedures: yes"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "family_vs_personal_history",
+    "pdf": "cardiology_report.pdf",
+    "category": "Context Disambiguation",
+    "question": "Did the patient or a family member suffer a myocardial infarction? Please distinguish clearly.",
+    "expected_keywords": [
+      "father",
+      "62",
+      "no prior history"
+    ],
+    "must_not_contain": [
+      "patient suffered a myocardial infarction"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "stress_echo_interpretation",
+    "pdf": "cardiology_report.pdf",
+    "category": "Diagnostic Extraction",
+    "question": "What were the left ventricular ejection fraction and the result of the exercise stress test?",
+    "expected_keywords": [
+      "58%",
+      "negative for inducible ischemia"
+    ],
+    "must_not_contain": [
+      "positive for ischemia"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "boundary_allergy_test",
+    "pdf": "cardiology_report.pdf",
+    "category": "Boundary Check (Absent Data)",
+    "question": "What drug allergies or adverse reactions are recorded for this patient?",
+    "expected_keywords": [
+      "Not documented in the provided medical record"
+    ],
+    "must_not_contain": [
+      "penicillin allergy",
+      "sulfa allergy"
+    ],
+    "is_boundary_test": true
+  },
+  {
+    "id": "boundary_unreported_lab_test",
+    "pdf": "cardiology_report.pdf",
+    "category": "Boundary Check (Absent Data)",
+    "question": "What was the patient's serum creatinine and potassium level?",
+    "expected_keywords": [
+      "Not documented in the provided medical record"
+    ],
+    "must_not_contain": [
+      "1.0 mg/dL",
+      "4.0 mEq/L"
+    ],
+    "is_boundary_test": true
+  }
+]
