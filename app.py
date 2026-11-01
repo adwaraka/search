@@ -14,15 +14,18 @@ from langchain_core.output_parsers import StrOutputParser
 
 from langchain_classic.retrievers import ContextualCompressionRetriever
 from langchain_community.document_compressors import FlashrankRerank
+from flashrank import Ranker
 
 # Config
 DATA_DIR = "./data"
 INDEX_BASE_DIR = "./faiss_index"
-OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+MODEL_NAME = os.getenv("OLLAMA_MODEL", "gemma2:9b")
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
 
-# Models - Using 3B for a balance of speed and logic
-embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=OLLAMA_URL)
-llm = ChatOllama(model="llama3.2:3b", base_url=OLLAMA_URL, temperature=0)
+# Models - Gemma 2 for high accuracy and clinical reasoning
+embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL, base_url=OLLAMA_URL)
+llm = ChatOllama(model=MODEL_NAME, base_url=OLLAMA_URL, temperature=0)
 
 
 def getVectorstore(pdf_filename):
@@ -46,7 +49,28 @@ def getVectorstore(pdf_filename):
     loader = PyPDFLoader(pdf_path)
     docs = loader.load()
 
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    # Clinical text splitting with section-aware separators
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=800,
+        chunk_overlap=150,
+        separators=[
+            "\n\n",
+            "\n",
+            "##",
+            "###",
+            "Patient:",
+            "Assessment:",
+            "Plan:",
+            "Diagnosis:",
+            "History of Present Illness:",
+            "Medications:",
+            "Allergies:",
+            "Lab Results:",
+            ". ",
+            " ",
+            "",
+        ],
+    )
     splits = splitter.split_documents(docs)
 
     vectorstore = FAISS.from_documents(splits, embeddings)
@@ -57,27 +81,24 @@ def getVectorstore(pdf_filename):
 def runRagChat(vectorstore):
     retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
-    # Stricter prompt for better accuracy
+    # Strict prompt for medical parsing & clinical extraction accuracy
     template = """
-    ### SYSTEM INSTRUCTIONS ###
-    You are a factual research assistant and logical analyst.
-    Answer the question using ONLY the provided context below.
+    ### MEDICAL RESEARCH & EXTRACTION ASSISTANT ###
+    You are a factual clinical document analyzer. Answer questions and parse information strictly using ONLY the provided medical context.
 
-    ### LOGICAL PROTOCOL ###
-    Before providing the final answer, perform these internal steps:
-    1. IDENTIFY: List specific facts from the context related to the question.
-    2. CONNECT: If facts are in different sources, explain how they relate (e.g., Character A's weapon vs. Character B's armor).
-    3. CONCLUDE: Provide the answer based strictly on those identified links.
-
-    If the context does not contain the answer or the links needed to deduce it, state "I do not know based on the provided text."
+    ### CLINICAL ACCURACY PROTOCOL ###
+    1. STRICT CITATION: Quote exact numbers, units (e.g., mg, mmol/L, bpm), lab reference ranges, and dosages. Never approximate or guess dosages.
+    2. CONTEXTUAL CHECK: Distinguish clearly between past medical history, family history, and active diagnoses.
+    3. NEGATION AWARENESS: Distinguish between affirmed symptoms and ruled-out conditions (e.g., "no evidence of infarction").
+    4. BOUNDARIES: If the provided text does not explicitly state the answer or the links needed to deduce it, state: "Not documented in the provided medical record." Do not assume or extrapolate clinical diagnoses.
 
     ### CONTEXT ###
     {context}
 
-    ### QUESTION ###
+    ### QUESTION / EXTRACTION GOAL ###
     Question: {question}
 
-    ### STEP-BY-STEP ANALYSIS & FINAL ANSWER ###
+    ### CLINICAL ANALYSIS & FINAL ANSWER ###
     Answer:"""
     prompt = ChatPromptTemplate.from_template(template)
 
@@ -103,7 +124,9 @@ def runRagChat(vectorstore):
 
 
     # By pulling 10 results from FAISS but using a Re-ranker to pick the best 5
-    compressor = FlashrankRerank()
+    compressor = FlashrankRerank(
+        client=Ranker(model_name="ms-marco-MultiBERT-L-12", cache_dir="/app/flashrank_cache")
+        )
     compressionRetriever = ContextualCompressionRetriever(
         base_compressor=compressor,
         base_retriever=retriever

@@ -1,2 +1,6 @@
 faiss_index/
-data/
+data/benchmark_results.json
+__pycache__/
+*.pyc
+flashrank_cache/
+error.log
