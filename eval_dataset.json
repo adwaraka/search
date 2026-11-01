@@ -1,6 +1,6 @@
 [
   {
-    "id": "med_dosage_extraction",
+    "id": "cardio_med_list",
     "pdf": "cardiology_report.pdf",
     "category": "Dosage & Medication Extraction",
     "question": "What medications and exact dosages are documented for the patient?",
@@ -8,75 +8,151 @@
       "Lisinopril",
       "10 mg",
       "Atorvastatin",
-      "20 mg",
-      "Aspirin",
-      "81 mg"
+      "40 mg",
+      "Metformin",
+      "500 mg"
     ],
     "must_not_contain": [
-      "40 mg",
-      "Metformin"
+      "20 mg",
+      "Aspirin 81 mg"
     ],
     "is_boundary_test": false
   },
   {
-    "id": "vitals_and_labs_extraction",
+    "id": "cardio_lisinopril_change",
+    "pdf": "cardiology_report.pdf",
+    "category": "Dosage & Medication Extraction",
+    "question": "What change was made to the Lisinopril dose, and what is the blood pressure target?",
+    "expected_keywords": [
+      "5 mg",
+      "10 mg",
+      "130/80"
+    ],
+    "must_not_contain": [
+      "20 mg"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "cardio_vitals_exam",
     "pdf": "cardiology_report.pdf",
     "category": "Lab & Vitals Extraction",
-    "question": "What were the patient's blood pressure, heart rate, LDL cholesterol, and hs-Troponin level?",
+    "question": "What were the patient's blood pressure, heart rate, and oxygen saturation on physical examination?",
     "expected_keywords": [
-      "138/86",
+      "152/90",
       "76 bpm",
-      "118 mg/dL",
-      "<0.01 ng/mL"
+      "98%"
+    ],
+    "must_not_contain": [
+      "158/94",
+      "138/86"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "cardio_ecg_intervals",
+    "pdf": "cardiology_report.pdf",
+    "category": "Diagnostic Extraction",
+    "question": "What were the PR interval, QRS duration, and QTc on the electrocardiogram?",
+    "expected_keywords": [
+      "164 ms",
+      "92 ms",
+      "428 ms"
     ],
     "must_not_contain": [],
     "is_boundary_test": false
   },
   {
-    "id": "negation_prior_mi",
+    "id": "cardio_echo_lvef",
     "pdf": "cardiology_report.pdf",
-    "category": "Negation Awareness",
-    "question": "Does the patient have a personal history of myocardial infarction or prior cardiac procedures?",
+    "category": "Diagnostic Extraction",
+    "question": "What was the left ventricular ejection fraction on echocardiogram, and what was the septal wall thickness?",
     "expected_keywords": [
-      "no"
+      "58%",
+      "12 mm"
     ],
     "must_not_contain": [
-      "patient had a myocardial infarction",
-      "history of cardiac procedures: yes"
+      "60% on echocardiogram"
     ],
     "is_boundary_test": false
   },
   {
-    "id": "family_vs_personal_history",
+    "id": "cardio_stress_result",
     "pdf": "cardiology_report.pdf",
-    "category": "Context Disambiguation",
-    "question": "Did the patient or a family member suffer a myocardial infarction? Please distinguish clearly.",
+    "category": "Diagnostic Extraction",
+    "question": "What was the pharmacologic stress test agent and dose, and what was the overall impression?",
     "expected_keywords": [
-      "father",
-      "62",
-      "no prior history"
+      "Regadenoson",
+      "0.4 mg",
+      "negative for inducible myocardial ischemia"
     ],
     "must_not_contain": [
+      "positive for ischemia",
+      "positive for inducible"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "cardio_ldl",
+    "pdf": "cardiology_report.pdf",
+    "category": "Lab & Vitals Extraction",
+    "question": "What is the patient's LDL cholesterol and how does the report interpret it?",
+    "expected_keywords": [
+      "138 mg/dL",
+      "above goal"
+    ],
+    "must_not_contain": [
+      "118 mg/dL"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "cardio_negation_prior_mi",
+    "pdf": "cardiology_report.pdf",
+    "category": "Negation Awareness",
+    "question": "Does the patient have a personal history of myocardial infarction or prior coronary revascularization?",
+    "expected_keywords": [
+      "no",
+      "myocardial infarction"
+    ],
+    "must_not_contain": [
+      "patient had a myocardial infarction",
+      "history of myocardial infarction: yes"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "cardio_aspirin_negation",
+    "pdf": "cardiology_report.pdf",
+    "category": "Negation Awareness",
+    "question": "Is the patient currently taking aspirin?",
+    "expected_keywords": [
+      "not started"
+    ],
+    "must_not_contain": [
+      "currently taking aspirin",
+      "aspirin 81 mg daily"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "cardio_family_history",
+    "pdf": "cardiology_report.pdf",
+    "category": "Context Disambiguation",
+    "question": "Who in the patient's family had coronary disease, and at what age? Does the patient himself have a history of myocardial infarction?",
+    "expected_keywords": [
+      "father",
+      "66",
+      "no"
+    ],
+    "must_not_contain": [
+      "62",
       "patient suffered a myocardial infarction"
     ],
     "is_boundary_test": false
   },
   {
-    "id": "stress_echo_interpretation",
-    "pdf": "cardiology_report.pdf",
-    "category": "Diagnostic Extraction",
-    "question": "What were the left ventricular ejection fraction and the result of the exercise stress test?",
-    "expected_keywords": [
-      "58%",
-      "negative for inducible ischemia"
-    ],
-    "must_not_contain": [
-      "positive for ischemia"
-    ],
-    "is_boundary_test": false
-  },
-  {
-    "id": "boundary_allergy_test",
+    "id": "cardio_boundary_allergy",
     "pdf": "cardiology_report.pdf",
     "category": "Boundary Check (Absent Data)",
     "question": "What drug allergies or adverse reactions are recorded for this patient?",
@@ -84,22 +160,254 @@
       "Not documented in the provided medical record"
     ],
     "must_not_contain": [
-      "penicillin allergy",
-      "sulfa allergy"
+      "penicillin",
+      "sulfa"
     ],
     "is_boundary_test": true
   },
   {
-    "id": "boundary_unreported_lab_test",
+    "id": "cardio_boundary_troponin_value",
     "pdf": "cardiology_report.pdf",
     "category": "Boundary Check (Absent Data)",
-    "question": "What was the patient's serum creatinine and potassium level?",
+    "question": "What were the exact numeric hs-troponin values?",
+    "expected_keywords": [
+      "Not documented in the provided medical record"
+    ],
+    "must_not_contain": [
+      "8, 9, 8",
+      "<14 ng/L"
+    ],
+    "is_boundary_test": true
+  },
+  {
+    "id": "cardio_boundary_creatinine",
+    "pdf": "cardiology_report.pdf",
+    "category": "Boundary Check (Absent Data)",
+    "question": "What was the patient's serum creatinine and HbA1c?",
     "expected_keywords": [
       "Not documented in the provided medical record"
     ],
     "must_not_contain": [
       "1.0 mg/dL",
-      "4.0 mEq/L"
+      "7.4%"
+    ],
+    "is_boundary_test": true
+  },
+  {
+    "id": "dc_stay_dates",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Admission Details",
+    "question": "What were the admission and discharge dates, and the length of stay?",
+    "expected_keywords": [
+      "10/21/2026",
+      "10/26/2026",
+      "5 days"
+    ],
+    "must_not_contain": [
+      "10/24/2026"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_discharge_meds",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Dosage & Medication Extraction",
+    "question": "List all discharge medications with dose, route, and frequency.",
+    "expected_keywords": [
+      "Lisinopril",
+      "10 mg",
+      "Atorvastatin",
+      "40 mg",
+      "Metformin",
+      "500 mg",
+      "PO"
+    ],
+    "must_not_contain": [
+      "20 mg",
+      "Penicillin 500"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_med_changes",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Dosage & Medication Extraction",
+    "question": "Which medications were changed, continued, or stopped during this admission?",
+    "expected_keywords": [
+      "Lisinopril",
+      "5 mg",
+      "10 mg",
+      "Atorvastatin",
+      "Metformin"
+    ],
+    "must_not_contain": [
+      "Stopped: Metformin",
+      "Stopped: Atorvastatin"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_aspirin_negation",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Negation Awareness",
+    "question": "Was aspirin prescribed at discharge?",
+    "expected_keywords": [
+      "not prescribed"
+    ],
+    "must_not_contain": [
+      "aspirin 81 mg daily"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_allergy",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Allergy Extraction",
+    "question": "What drug allergies does the patient have and what was the reaction?",
+    "expected_keywords": [
+      "Penicillin",
+      "rash"
+    ],
+    "must_not_contain": [
+      "Not documented",
+      "sulfa"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_labs",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Lab & Vitals Extraction",
+    "question": "What were the HbA1c, creatinine, eGFR, and LDL cholesterol results?",
+    "expected_keywords": [
+      "7.4%",
+      "1.0 mg/dL",
+      "82",
+      "138 mg/dL"
+    ],
+    "must_not_contain": [
+      "118 mg/dL"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_troponin",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Lab & Vitals Extraction",
+    "question": "What were the serial high-sensitivity troponin I values and the reference range?",
+    "expected_keywords": [
+      "8",
+      "9",
+      "ng/L",
+      "<14"
+    ],
+    "must_not_contain": [
+      "<0.01 ng/mL"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_bp_admission_vs_discharge",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Context Disambiguation",
+    "question": "What was the blood pressure on admission compared with at discharge?",
+    "expected_keywords": [
+      "158/94",
+      "128/78"
+    ],
+    "must_not_contain": [
+      "152/90"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_diagnoses",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Diagnostic Extraction",
+    "question": "What were the discharge diagnoses?",
+    "expected_keywords": [
+      "Hypertensive urgency",
+      "Type 2 Diabetes",
+      "Hyperlipidemia"
+    ],
+    "must_not_contain": [
+      "myocardial infarction was diagnosed",
+      "heart failure was diagnosed"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_social_history",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Context Disambiguation",
+    "question": "What is the patient's smoking history?",
+    "expected_keywords": [
+      "former",
+      "15 pack-years",
+      "2012"
+    ],
+    "must_not_contain": [
+      "current smoker"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_family_vs_personal",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Context Disambiguation",
+    "question": "What conditions run in the patient's family, and which relative has each?",
+    "expected_keywords": [
+      "father",
+      "coronary artery disease",
+      "mother",
+      "Type 2 Diabetes"
+    ],
+    "must_not_contain": [
+      "patient's mother had coronary",
+      "father had Type 2 Diabetes"
+    ],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_followup",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Plan & Follow-up",
+    "question": "What follow-up appointments are scheduled and in what timeframes?",
+    "expected_keywords": [
+      "Dr. Alan Reyes",
+      "1 week",
+      "Dr. Priya Nair",
+      "4 weeks",
+      "6-8 weeks"
+    ],
+    "must_not_contain": [],
+    "is_boundary_test": false
+  },
+  {
+    "id": "dc_boundary_potassium",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Boundary Check (Absent Data)",
+    "question": "What was the patient's serum potassium level?",
+    "expected_keywords": [
+      "Not documented in the provided medical record"
+    ],
+    "must_not_contain": [
+      "4.0 mEq/L",
+      "4.2 mEq/L"
+    ],
+    "is_boundary_test": true
+  },
+  {
+    "id": "dc_boundary_weight_bmi",
+    "pdf": "patient_discharge_summary.pdf",
+    "category": "Boundary Check (Absent Data)",
+    "question": "What is the patient's body weight and BMI?",
+    "expected_keywords": [
+      "Not documented in the provided medical record"
+    ],
+    "must_not_contain": [
+      "kg",
+      "kg/m2"
     ],
     "is_boundary_test": true
   }
