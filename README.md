@@ -158,7 +158,7 @@ ollama pull llama3.1:8b
 docker compose run --rm rag-app python benchmark.py --models gemma2:9b qwen2.5:7b llama3.1:8b
 ```
 
-Results and latency metrics will be printed as a summary table and exported to `benchmark_results.json`.
+Results and latency metrics will be printed as a summary table and exported to `benchmark_results.json`. You can run `--output /app/data/benchmark_results.json` to persist the results.
 
 ---
 
